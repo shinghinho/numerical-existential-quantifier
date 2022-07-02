@@ -44,10 +44,15 @@ index-injective {i = i} {j = j} f p = just-injective just-i≡just-j
     just-injective : {A : Set 𝓁″} {a b : A} → just a ≡ just b → a ≡ b
     just-injective refl = refl
     just-i≡just-j : just i ≡ just j
-    just-i≡just-j = just i                   ≡⟨ sym (is-unique f i) ⟩
-                    indexed-by f (index f i) ≡⟨ cong (indexed-by f) p ⟩
-                    indexed-by f (index f j) ≡⟨ is-unique f j ⟩
-                    just j                   ∎
+    just-i≡just-j =
+         just i
+       ≡⟨ sym (is-unique f i) ⟩
+         indexed-by f (index f i)
+       ≡⟨ cong (indexed-by f) p ⟩
+         indexed-by f (index f j)
+       ≡⟨ is-unique f j ⟩
+         just j
+       ∎
 
 index-resp-≢ : (f : A →! B) → i ≢ j → index f i ≢ index f j
 index-resp-≢ f neq = neq ∘ index-injective f
@@ -161,3 +166,43 @@ list!-length {n = suc n} f =
 vec! : {n : ℕ} → Unique A n → Vec A n
 vec! {n = zero} f = v[]
 vec! {n = suc n} f = index f fzero v∷ vec! (pred! f)
+
+vec!-preserves-index : {n : ℕ} (f : Unique A n)
+                     → {i : Fin n}
+                     → vlookup (vec! f) i ≡ index f i
+vec!-preserves-index f {i = fzero} = refl
+vec!-preserves-index f {i = fsuc i} = vec!-preserves-index (pred! f) {i = i}
+
+vec!-has-unique-elems : {n : ℕ} {i j : Fin n}
+                      → (f : Unique A n)
+                      → (i ≢ j)
+                      → (vlookup (vec! f) i ≢ vlookup (vec! f) j)
+vec!-has-unique-elems {i = i} {j = j} f neq eq = neq (index-injective f lemma)
+  where
+    lemma : index f i ≡ index f j
+    lemma =
+        index f i
+      ≡⟨ sym (vec!-preserves-index f) ⟩
+        vlookup (vec! f) i
+      ≡⟨ eq ⟩
+        vlookup (vec! f) j
+      ≡⟨ vec!-preserves-index f {i = j} ⟩
+        index f j
+      ∎
+
+vlookup∘vec-injective : {n : ℕ} {i j : Fin n}
+                      → (f : Unique A n)
+                      → (vlookup (vec! f) i ≡ vlookup (vec! f) j)
+                      → i ≡ j
+vlookup∘vec-injective {i = i} {j = j} f eq = index-injective f lemma
+  where
+    lemma : index f i ≡ index f j
+    lemma =
+        index f i
+      ≡⟨ sym (vec!-preserves-index f) ⟩
+        vlookup (vec! f) i
+      ≡⟨ eq ⟩
+        vlookup (vec! f) j
+      ≡⟨ vec!-preserves-index f {i = j} ⟩
+        index f j
+      ∎
