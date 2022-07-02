@@ -90,22 +90,18 @@ is-unique (g ∘! f) x =
     just x
   ∎
 
--- Monoidal product? (Check this)
-_⊗!_ : (A →! C) → (B →! D) → Set _
-_⊗!_ {A = A} {C = C} {B = B} {D = D} f g = A × B →! C × D
-
--- There is a monoidal product for unique indexing
-_⊗!₁_ : (f : A →! C)
-      → (g : B →! D)
-      → f ⊗! g
-index (f ⊗!₁ g) (x , y) = index f x , index g y
-indexed-by (f ⊗!₁ g) (x , y) = do p ← indexed-by f x
-                                  q ← indexed-by g y
-                                  just (p , q)
-is-unique (f ⊗!₁ g) (x , y) =
-    indexed-by (f ⊗!₁ g) (index (f ⊗!₁ g) (x , y))
+-- Unique indexing can be lifted over product
+_×!_ : (f : A →! C)
+     → (g : B →! D)
+     → A × B →! C × D
+index (f ×! g) (x , y) = index f x , index g y
+indexed-by (f ×! g) (x , y) = do p ← indexed-by f x
+                                 q ← indexed-by g y
+                                 just (p , q)
+is-unique (f ×! g) (x , y) =
+    indexed-by (f ×! g) (index (f ×! g) (x , y))
   ≡⟨ refl ⟩
-    indexed-by (f ⊗!₁ g) (index f x , index g y)
+    indexed-by (f ×! g) (index f x , index g y)
   ≡⟨ refl ⟩
     (indexed-by f (index f x) >>= λ p →
      indexed-by g (index g y) >>= λ q →
@@ -206,3 +202,21 @@ vlookup∘vec-injective {i = i} {j = j} f eq = index-injective f lemma
       ≡⟨ vec!-preserves-index f {i = j} ⟩
         index f j
       ∎
+
+record UVec (A : Set 𝓁) (n : ℕ) : Set 𝓁 where
+  field
+    carrier : Vec A n
+    is-unique : {i j : Fin n} → i ≢ j → vlookup carrier i ≢ vlookup carrier j
+    is-injective : {i j : Fin n} → vlookup carrier i ≡ vlookup carrier j → i ≡ j
+open UVec public
+
+→!-to-uvec : {n : ℕ} → Unique A n → UVec A n
+carrier (→!-to-uvec f) = vec! f
+is-unique (→!-to-uvec f) = vec!-has-unique-elems f
+is-injective (→!-to-uvec f) = vlookup∘vec-injective f
+
+uvlookup : {n : ℕ} → UVec A n → Fin n → A
+uvlookup = vlookup ∘ carrier
+
+_∈_ : B → (A →! B) → Set _
+_∈_ {A = A} x f = Σ A (λ i → x ≡ index f i)
