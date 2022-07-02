@@ -7,12 +7,12 @@ open import Data.Empty
 open import Data.Product
 open import Data.Vec using (Vec) renaming ([] to v[]; _∷_ to _v∷_; length to vlength; lookup to vlookup)
 open import Data.List using (List) renaming ([] to l[]; _∷_ to _l∷_; length to llength)
-open import Data.Nat using (ℕ; zero; suc; _+_; _⊔_; _≤_; z≤n; s≤s)
+open import Data.Nat using (ℕ; zero; suc; _+_; _⊔_; _≤_; z≤n; s≤s) public
 open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc) public
 open import Function public
 open import Level renaming (zero to lzero; suc to lsuc; _⊔_ to _⊔ˡ_) public
 open import Relation.Binary.PropositionalEquality public
-open Relation.Binary.PropositionalEquality.≡-Reasoning
+open Relation.Binary.PropositionalEquality.≡-Reasoning public
 
 private
   variable
